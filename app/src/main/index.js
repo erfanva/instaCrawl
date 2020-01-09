@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const { app, Menu, shell, ipcMain } = require('electron')
+const { app, Menu, shell, ipcMain, session, net } = require('electron')
 const tray = require('./tray')
 const appMenu = require('./menus')
 
@@ -14,12 +14,14 @@ const renderer = {
   js: '../../dist/renderer/js'
 }
 
+const baseUrl = 'https://www.instagram.com/'
+
 /**
  * Register Windows
  */
 
 window.register('main', {
-  url: 'https://www.instagram.com/erfan_v_a/',//'https://www.instagram.com/?utm_source=ig_lite',
+  url: baseUrl + 'erfan_v_a/',
   useLastState: true,
   fakeUserAgent: true,
   defaultWindowEvents: false,
@@ -108,7 +110,6 @@ function setupWindowEvents(win) {
     win = null;
 
   })
-
   win.on('page-title-updated', e => {
     e.preventDefault()
   })
@@ -148,7 +149,11 @@ function setupWebContentsEvents(page) {
     `
 
     page.webContents.executeJavaScript(jscode, true).then((result) => {
-      console.log(cleanPostsdata(result)) // Will be the JSON object from the fetch call
+      let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
+      getPage("https://www.instagram.com/p/BNcstR2BLny/").then( 
+        res => console.log(parsePostPage(res))
+      )
+      // console.log(posts)
     })
 
   })
@@ -164,18 +169,57 @@ function cleanPostsdata(posts) {
 
   posts.forEach(post => {
     post = post.node
-    const post_type = post.__typename == "GraphImage" ? "image" : "video"
+    const is_video = post.is_video
     const comments_count = (post.edge_media_to_comment && post.edge_media_to_comment.count) || 0
     const likes_count = (post.edge_liked_by || post.edge_media_preview_like).count
     const shortcode = post.shortcode
     const date = post.taken_at_timestamp
     data.push({
-      post_type: post_type,
+      is_video: is_video,
       comments_count: comments_count,
       likes_count: likes_count,
-      url: shortcode,
+      url: baseUrl + 'p/' + shortcode,
       date: date
     })
   });
   return data
+}
+
+function getPage(url) {
+  const ses = session.fromPartition('persist:my-session-name')
+  const request = net.request({
+    method: 'GET',
+    url: url,
+    session: ses
+  })
+  return new Promise(function (resolve, reject) {
+    request.on('response', (response) => {
+      let data = ""
+      response.on('data', (chunk) => {
+        data += chunk
+      })
+      response.on('end', () => {
+        resolve(data)
+      })
+    })
+    request.end()
+  })
+}
+function parsePostPage(pageText) {
+  let res = pageText.split('"graphql":')[1]
+  res = `{"graphql":` + res
+  res = res.split(");</script>")[0]
+  res = JSON.parse(res)
+  res = res.graphql.shortcode_media
+
+  const media_sources = res.edge_sidecar_to_children && res.edge_sidecar_to_children.edges
+  const display_url = res.is_video ? res.video_url : res.display_url
+  let data = []
+  if (media_sources) {
+      media_sources.forEach(post => {
+          post = post.node
+          data.push(post.is_video ? post.video_url : post.display_url)
+      });
+  }
+  return (data.length > 0 && data) || [display_url]
 }
