@@ -26,7 +26,7 @@ function registerWindow(name, def) {
   delete def.url
 
   def.icon = isPlatform('linux') ? path.join(__dirname, '../assets/icon.png') : null
-  def.title = def.title || app.getName()
+  def.title = def.title || app.name
   def.darkTheme = isDarkMode
   def.backgroundColor = isDarkMode ? '#192633' : '#fff'
 
@@ -119,7 +119,7 @@ function openWindow(name) {
 
     if (win) {
       if (wanted.options.agent) {
-        win.webContents.setUserAgent(wanted.options.agent)
+        win.webContents.userAgent = wanted.options.agent
       }
 
       // Load URL

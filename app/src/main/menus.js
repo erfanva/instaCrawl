@@ -4,7 +4,7 @@ const isPlatform = require('./../common/is-platform')
 const {app, BrowserWindow, Menu, shell, dialog, nativeImage} = require('electron')
 const config = require('./config')
 const win = BrowserWindow.getAllWindows()[0]
-const appName = app.getName()
+const appName = app.name
 
 function sendAction (action) {
   const win = BrowserWindow.getAllWindows()[0]
@@ -30,7 +30,7 @@ const helpSubmenu = [
 
             -
 
-            ${app.getName()} ${app.getVersion()}
+            ${app.name} ${app.getVersion()}
             Electron ${process.versions.electron}
             ${process.platform} ${process.arch} ${os.release()}`
 
