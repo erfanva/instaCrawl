@@ -94,7 +94,7 @@ exports.createTray = win => {
   }
   ]
 
-  tray.setToolTip(`${app.getName()}`)
+  tray.setToolTip(`${app.name}`)
   tray.setContextMenu(Menu.buildFromTemplate(contextMenu))
   tray.on('click', () => {
     toggleWin()
