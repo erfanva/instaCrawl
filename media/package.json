@@ -1,37 +1,37 @@
 {
-  "name": "ramme",
-  "main": "src/main",
-  "private": true,
-  "version": "3.2.6",
-  "description": "Unofficial Instagram Desktop App",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/terkelg/ramme.git"
-  },
-  "license": "MIT",
-  "author": "Terkel Gjervig <hello@terkel.com> (terkel.com)",
-  "bugs": {
-    "url": "https://github.com/terkelg/ramme/issues"
-  },
-  "keywords": [
-    "Instagram",
-    "Electron",
-    "Social",
-    "Client"
-  ],
-  "dependencies": {
-    "electron-config": "^1.0.0",
-    "electron-is-dev": "^0.3.0",
-    "element-ready": "^3.0.0",
-    "first-run": "^1.2.0",
-    "insight": "^0.10.1",
-    "ms": "^2.1.1",
-    "os": "^0.1.1"
-  },
-  "homepage": "https://github.com/terkelg/ramme#readme",
-  "devDependencies": {},
-  "scripts": {
-    "start": "electron src/main/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  }
+    "name": "instacrawl",
+    "main": "src/main",
+    "private": true,
+    "version": "3.2.6",
+    "description": "Instagram Crawler Desktop App",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/terkelg/ramme.git"
+    },
+    "license": "MIT",
+    "author": "Terkel Gjervig <hello@terkel.com> (terkel.com)",
+    "bugs": {
+        "url": "https://github.com/terkelg/ramme/issues"
+    },
+    "keywords": [
+        "Instagram",
+        "Electron",
+        "Social",
+        "Client"
+    ],
+    "dependencies": {
+        "electron-config": "^1.0.0",
+        "electron-is-dev": "^0.3.0",
+        "element-ready": "^3.0.0",
+        "first-run": "^1.2.0",
+        "insight": "^0.10.1",
+        "ms": "^2.1.1",
+        "os": "^0.1.1"
+    },
+    "homepage": "https://github.com/terkelg/ramme#readme",
+    "devDependencies": {},
+    "scripts": {
+        "start": "electron src/main/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    }
 }
