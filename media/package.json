@@ -4,8 +4,15 @@
   "private": true,
   "version": "3.2.6",
   "description": "Unofficial Instagram Desktop App",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terkelg/ramme.git"
+  },
   "license": "MIT",
-  "author": "Erfan Vahabi <erfanv1@gmail.com> ",
+  "author": "Terkel Gjervig <hello@terkel.com> (terkel.com)",
+  "bugs": {
+    "url": "https://github.com/terkelg/ramme/issues"
+  },
   "keywords": [
     "Instagram",
     "Electron",

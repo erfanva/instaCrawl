@@ -1,4 +1,4 @@
-const {ipcRenderer} = require('electron')
+const { ipcRenderer } = require('electron')
 const elementReady = require('element-ready')
 
 const config = require('../../main/config')
@@ -68,7 +68,7 @@ ipcRenderer.on('navigate-down', () => {
   }
 })
 
-function backHomeButton (location) {
+function backHomeButton(location) {
   const body = $('body')
   const link = document.createElement('a')
   const element = document.createElement('div')
@@ -97,7 +97,7 @@ function backHomeButton (location) {
   })
 }
 
-function setDarkMode () {
+function setDarkMode() {
   document.documentElement.classList.toggle('dark-mode', config.get('darkMode'))
 
   if (document.documentElement.style.backgroundColor === 'rgb(25, 38, 51)') {
@@ -107,7 +107,7 @@ function setDarkMode () {
   }
 }
 
-function fix404 () {
+function fix404() {
   // Add missing elements
   const span = $('.root')
   const section = $('.page')
@@ -131,6 +131,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   // Initialize darkMode settings
   setDarkMode()
+
+  // Get data
+  /*const data = window._sharedData.entry_data.ProfilePage[0].graphql.user
+
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+
+  let commulativeData = data.edge_owner_to_timeline_media.edges
+  // resolve(data.edge_owner_to_timeline_media)
+  XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function (value) {
+    this.addEventListener("load", function (e) {
+      const d = JSON.parse(e.currentTarget.response);
+      if (d.data && d.data.user && d.data.user.edge_owner_to_timeline_media) {
+        commulativeData = commulativeData.concat(d.data.user.edge_owner_to_timeline_media.edges)
+        if (!d.data.user.edge_owner_to_timeline_media.page_info.has_next_page)
+          ipcRenderer.send("dataLoaded")
+      }
+      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+    }, false);
+    this.realSend(value);
+  };*/
 
   // Fix 404 pages
   elementReady('.dialog-404').then(fix404)

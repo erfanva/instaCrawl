@@ -1,5 +1,5 @@
 const path = require('path')
-const {app, BrowserWindow, ipcMain} = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const config = require('./config')
 const isPlatform = require('./../common/is-platform')
 
@@ -12,7 +12,7 @@ let currentWindows = {}
 let win
 
 // [function] Register Window
-function registerWindow (name, def) {
+function registerWindow(name, def) {
   const url = def.url
   const useLastState = def.useLastState
   const fakeUserAgent = def.fakeUserAgent
@@ -43,47 +43,61 @@ function registerWindow (name, def) {
   return true
 }
 
-function intervalFunc () {
+function intervalFunc() {
   if (win) {
     let jscode = "var comp = document.getElementById('back_button');" +
-                  'if (comp == null){                                          ' +
-                  "var element = document.getElementsByClassName('_tdn3u');    " +
-                  "var para = document.createElement('div');                   " +
-                  "para.setAttribute('class', '_k0d2z' );                      " +
-                  "para.setAttribute('id', 'back_button' );                    " +
-                  "var node = document.createTextNode('');                     " +
-                  'para.appendChild(node);                                     ' +
-                  'element[0].appendChild(para);                               ' +
-                  "var element = document.getElementById('back_button');       " +
-                  "var para = document.createElement('a');                     " +
-                  "para.setAttribute('class', '_ttgfw' );                      " +
-                  "para.setAttribute('id', 'back_button_a' );                  " +
-                  "para.setAttribute('onclick','goBack()');                    " +
-                  'element.appendChild(para);                                  ' +
-                  "var element = document.getElementById('back_button_a');     " +
-                  "var para = document.createElement('div');                   " +
-                  "para.setAttribute('class', '_crp8c' );                      " +
-                  "para.setAttribute('id', 'back_button_div' );                " +
-                  "para.setAttribute('style', 'background-color: #262626;      " +
-                   '                           border-radius: 50%;             ' +
-                   "                           height: 24px; width: 24px;' );  " +
-                  'element.appendChild(para);                                  ' +
-                  "var para = document.createElement('script');                " +
-                  "para.setAttribute('type', 'text/javascript' );              " +
-                  "var node = document.createTextNode('function goBack() {     " +
-                  '                   window.history.back();                   ' +
-                  "                                                       }'); " +
-                  'para.appendChild(node);                                     ' +
-                  'document.head.appendChild(para);}                           '
+      'if (comp == null){                                          ' +
+      "var element = document.getElementsByClassName('_tdn3u');    " +
+      "var para = document.createElement('div');                   " +
+      "para.setAttribute('class', '_k0d2z' );                      " +
+      "para.setAttribute('id', 'back_button' );                    " +
+      "var node = document.createTextNode('');                     " +
+      'para.appendChild(node);                                     ' +
+      'element[0].appendChild(para);                               ' +
+      "var element = document.getElementById('back_button');       " +
+      "var para = document.createElement('a');                     " +
+      "para.setAttribute('class', '_ttgfw' );                      " +
+      "para.setAttribute('id', 'back_button_a' );                  " +
+      "para.setAttribute('onclick','goBack()');                    " +
+      'element.appendChild(para);                                  ' +
+      "var element = document.getElementById('back_button_a');     " +
+      "var para = document.createElement('div');                   " +
+      "para.setAttribute('class', '_crp8c' );                      " +
+      "para.setAttribute('id', 'back_button_div' );                " +
+      "para.setAttribute('style', 'background-color: #262626;      " +
+      '                           border-radius: 50%;             ' +
+      "                           height: 24px; width: 24px;' );  " +
+      'element.appendChild(para);                                  ' +
+      "var para = document.createElement('script');                " +
+      "para.setAttribute('type', 'text/javascript' );              " +
+      "var node = document.createTextNode('function goBack() {     " +
+      '                   window.history.back();                   ' +
+      "                                                       }'); " +
+      'para.appendChild(node);                                     ' +
+      'document.head.appendChild(para);}                           '
 
     win.webContents.executeJavaScript(jscode)
   }
 }
 
-setInterval(intervalFunc, 50)
-
+// setInterval(asfhgk, 50)
+// function asfhgk() {
+//   if (win) {
+//     let jscode = `
+//     new Promise(function(resolve, reject) {
+//       let data = []
+//       const as = document.querySelectorAll('article a')
+//       as.forEach( item => data.push(item.href))
+//       resolve(data)
+//     });
+//     `
+//     win.webContents.executeJavaScript(jscode, true).then((result) => {
+//       console.log(result) // Will be the JSON object from the fetch call
+//     })
+//   }
+// }
 // [function] Open Window
-function openWindow (name) {
+function openWindow(name) {
   if (registeredWindows[name]) {
     const wanted = registeredWindows[name]
 
@@ -114,14 +128,14 @@ function openWindow (name) {
       }
 
       // Add save size event
-      if (wanted.options.useLastState) {
-        win.on('close', e => {
-          config.set(name + 'LastState', win.getBounds())
-        })
-      }
+      // if (wanted.options.useLastState) {
+      //   win.on('close', e => {
+      //     config.set(name + 'LastState', win.getBounds())
+      //   })
+      // }
 
       // Add de-reference event
-      win.on('closed', e => {
+      win.on('close', e => {
         delete currentWindows[name]
       })
 
@@ -139,26 +153,26 @@ function openWindow (name) {
 }
 
 // [function] Get window
-function getWindow (name) {
+function getWindow(name) {
   if (currentWindows[name]) {
     return currentWindows[name]
   }
 }
 
 // [function] Window(s) is/are open
-function isOpen (name) {
+function isOpen(name) {
   if (name && currentWindows[name]) {
     return true
   }
 }
 
 // [function] Count open windows
-function countOpen () {
+function countOpen() {
   return Object.keys(currentWindows).length
 }
 
 // [function] Close window
-function closeWindow (name) {
+function closeWindow(name) {
   if (currentWindows[name]) {
     currentWindows[name].close()
     return true
@@ -166,14 +180,14 @@ function closeWindow (name) {
 }
 
 // [function] LoadURL
-function loadURL (name, url) {
+function loadURL(name, url) {
   if (currentWindows[name] && url) {
     currentWindows[name].loadURL(url)
   }
 }
 
 // [function] For each window
-function each (func) {
+function each(func) {
   if (countOpen() > 0) {
     for (var name in currentWindows) {
       if (currentWindows.hasOwnProperty(name)) {

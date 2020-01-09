@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const {app, Menu, shell, ipcMain} = require('electron')
+const { app, Menu, shell, ipcMain } = require('electron')
 const tray = require('./tray')
 const appMenu = require('./menus')
 
@@ -15,32 +15,11 @@ const renderer = {
 }
 
 /**
- * Singleton
- */
-let shouldQuit = app.makeSingleInstance(() => {
-  // Someone tried to run a second instance, we should focus our window.
-  window.each(win => {
-    if (win) {
-      if (!win.isVisible()) {
-        win.show()
-      } else {
-        if (win.isMinimized()) win.restore()
-        win.focus()
-      }
-    }
-  })
-})
-
-if (shouldQuit) {
-  app.quit()
-}
-
-/**
  * Register Windows
  */
 
 window.register('main', {
-  url: 'https://www.instagram.com/?utm_source=ig_lite',
+  url: 'https://www.instagram.com/erfan_v_a/',//'https://www.instagram.com/?utm_source=ig_lite',
   useLastState: true,
   fakeUserAgent: true,
   defaultWindowEvents: false,
@@ -54,7 +33,8 @@ window.register('main', {
   autoHideMenuBar: true,
   webPreferences: {
     preload: path.join(__dirname, renderer.js, 'index.js'),
-    nodeIntegration: false
+    nodeIntegration: false,
+    partition: 'persist:my-session-name'
   }
 })
 
@@ -81,8 +61,8 @@ app.on('ready', () => {
   setupWindowEvents(mainWindow)
 
   // Create menus
-  Menu.setApplicationMenu(appMenu)
-  tray.createTray(mainWindow)
+  // Menu.setApplicationMenu(appMenu)
+  // tray.createTray(mainWindow)
 
   // Update and analytics
   updater.init(mainWindow)
@@ -95,11 +75,10 @@ app.on('ready', () => {
 app.on('activate', () => {
   window.get('main').show()
 })
-
-app.on('before-quit', () => {
-  shouldQuit = true
-})
-
+app.on('window-all-closed', function () {
+  if (process.platform != 'darwin')
+    app.quit();
+});
 /**
  * Communicate with renderer process (web page)
  */
@@ -110,6 +89,10 @@ ipcMain.on('back', (e, arg) => {
   }
 })
 
+ipcMain.on('dataLoaded', (e, arg) => {
+  console.log("yes")
+})
+
 ipcMain.on('home', (e, arg) => {
   let page = e.sender.webContents
   page.loadURL('https://www.instagram.com/?utm_source=ig_lite', {
@@ -117,21 +100,13 @@ ipcMain.on('home', (e, arg) => {
   })
   page.clearHistory()
 })
-
 /**
  * setupWindowEvents
  */
-function setupWindowEvents (win) {
+function setupWindowEvents(win) {
   win.on('close', e => {
-    if (!shouldQuit) {
-      e.preventDefault()
+    win = null;
 
-      if (isPlatform('macOS')) {
-        app.hide()
-      } else {
-        win.hide()
-      }
-    }
   })
 
   win.on('page-title-updated', e => {
@@ -142,22 +117,40 @@ function setupWindowEvents (win) {
 /**
  * mainWindowEvents
  */
-function setupWebContentsEvents (page) {
-  page.on('did-navigate-in-page', (event, arg) => {
-    // Get back menu item and disable/enable it
-    const menuBackBtn = appMenu.items[1].submenu.items[0]
-    menuBackBtn.enabled = page.canGoBack()
-    // Notify back-button in sidebar about the state change
-    page.send('set-button-state', menuBackBtn.enabled)
-  })
+function setupWebContentsEvents(page) {
 
   // Inject styles when DOM is ready
   page.on('dom-ready', () => {
-    page.insertCSS(fs.readFileSync(path.join(__dirname, renderer.styles, 'app.css'), 'utf8'))
-    page.insertCSS(fs.readFileSync(path.join(__dirname, renderer.styles, 'theme-dark/main.css'), 'utf8'))
+    let jscode = `
+      new Promise(function (resolve, reject) {
+        const data = window._sharedData.entry_data.ProfilePage[0].graphql.user
+    
+        setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+    
+        let commulativeData = data.edge_owner_to_timeline_media.edges
+        // resolve(data.edge_owner_to_timeline_media)
+        XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.send = function (value) {
+            this.addEventListener("load", function (e) {
+                const d = JSON.parse(e.currentTarget.response);
+                if (d.data && d.data.user && d.data.user.edge_owner_to_timeline_media) {
+                    commulativeData = commulativeData.concat(d.data.user.edge_owner_to_timeline_media.edges)
+                    if (!d.data.user.edge_owner_to_timeline_media.page_info.has_next_page){
+                        XMLHttpRequest.prototype.send = XMLHttpRequest.prototype.realSend
+                        resolve(commulativeData)
+                    }
+                }
+                setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+            }, false);
+            this.realSend(value);
+        };
+      });
+    `
 
-    window.close('preload') // Close preload window
-    window.get('main').show() // Show main window
+    page.webContents.executeJavaScript(jscode, true).then((result) => {
+      console.log(cleanPostsdata(result)) // Will be the JSON object from the fetch call
+    })
+
   })
 
   // Open links in external applications
@@ -165,4 +158,24 @@ function setupWebContentsEvents (page) {
     e.preventDefault()
     shell.openExternal(url)
   })
+}
+function cleanPostsdata(posts) {
+  let data = []
+
+  posts.forEach(post => {
+    post = post.node
+    const post_type = post.__typename == "GraphImage" ? "image" : "video"
+    const comments_count = (post.edge_media_to_comment && post.edge_media_to_comment.count) || 0
+    const likes_count = (post.edge_liked_by || post.edge_media_preview_like).count
+    const shortcode = post.shortcode
+    const date = post.taken_at_timestamp
+    data.push({
+      post_type: post_type,
+      comments_count: comments_count,
+      likes_count: likes_count,
+      url: shortcode,
+      date: date
+    })
+  });
+  return data
 }
