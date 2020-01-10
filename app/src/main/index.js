@@ -150,7 +150,7 @@ function setupWebContentsEvents(page) {
 
     page.webContents.executeJavaScript(jscode, true).then((result) => {
       let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
-      getPage("https://www.instagram.com/p/BNcstR2BLny/").then( 
+      getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
         res => console.log(parsePostPage(res))
       )
       // console.log(posts)
@@ -206,20 +206,28 @@ function getPage(url) {
   })
 }
 function parsePostPage(pageText) {
-  let res = pageText.split('"graphql":')[1]
-  res = `{"graphql":` + res
-  res = res.split(");</script>")[0]
-  res = JSON.parse(res)
+  let res = pageText.split("__additionalDataLoaded")[2]
+  if (res) {
+    res = res.split('"graphql":')[1]
+    res = `{"graphql":` + res
+    res = res.split(");</script>")[0]
+    res = JSON.parse(res)
+  } else {
+    res = pageText.split("window._sharedData = ")[1]
+    res = res.split(";")[0]
+    res = JSON.parse(res)
+    res = res.entry_data.PostPage[0]
+  }
   res = res.graphql.shortcode_media
 
   const media_sources = res.edge_sidecar_to_children && res.edge_sidecar_to_children.edges
   const display_url = res.is_video ? res.video_url : res.display_url
   let data = []
   if (media_sources) {
-      media_sources.forEach(post => {
-          post = post.node
-          data.push(post.is_video ? post.video_url : post.display_url)
-      });
+    media_sources.forEach(post => {
+      post = post.node
+      data.push(post.is_video ? post.video_url : post.display_url)
+    });
   }
   return (data.length > 0 && data) || [display_url]
 }
