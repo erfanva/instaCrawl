@@ -91,10 +91,6 @@ ipcMain.on('back', (e, arg) => {
   }
 })
 
-ipcMain.on('dataLoaded', (e, arg) => {
-  console.log("yes")
-})
-
 ipcMain.on('home', (e, arg) => {
   let page = e.sender.webContents
   page.loadURL('https://www.instagram.com/?utm_source=ig_lite', {
@@ -124,21 +120,26 @@ function setupWebContentsEvents(page) {
   page.on('dom-ready', () => {
     let jscode = `
       new Promise(function (resolve, reject) {
-        const data = window._sharedData.entry_data.ProfilePage[0].graphql.user
+        let data = window._sharedData
+        data = data ? data.entry_data : undefined
+        data = data ? data.ProfilePage[0].graphql.user : undefined
+
+        if(!data)
+          reject(data)
     
         setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
     
-        let commulativeData = data.edge_owner_to_timeline_media.edges
+        data = data.edge_owner_to_timeline_media.edges
         // resolve(data.edge_owner_to_timeline_media)
         XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.send = function (value) {
             this.addEventListener("load", function (e) {
                 const d = JSON.parse(e.currentTarget.response);
                 if (d.data && d.data.user && d.data.user.edge_owner_to_timeline_media) {
-                    commulativeData = commulativeData.concat(d.data.user.edge_owner_to_timeline_media.edges)
+                  data = data.concat(d.data.user.edge_owner_to_timeline_media.edges)
                     if (!d.data.user.edge_owner_to_timeline_media.page_info.has_next_page){
                         XMLHttpRequest.prototype.send = XMLHttpRequest.prototype.realSend
-                        resolve(commulativeData)
+                        resolve(data)
                     }
                 }
                 setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
@@ -149,6 +150,8 @@ function setupWebContentsEvents(page) {
     `
 
     page.webContents.executeJavaScript(jscode, true).then((result) => {
+      if(!result)
+        return
       let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
       getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
         res => console.log(parsePostPage(res))
