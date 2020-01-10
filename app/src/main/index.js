@@ -16,6 +16,7 @@ const renderer = {
 
 const baseUrl = 'https://www.instagram.com/'
 let date_range = {}
+let posts
 
 function getWinConfig(url, rend) {
   rend = rend || path.join(__dirname, renderer.js, 'index.js')
@@ -94,7 +95,7 @@ ipcMain.on('set_date_range', (e, arg) => {
   let page = e.sender.webContents
   console.log(arg)
   date_range = arg
-  window.open('main')
+  console.log(posts)
 })
 
 /**
@@ -115,7 +116,9 @@ function setupWindowEvents(win) {
 function setupWebContentsEvents(page) {
   // you can Inject styles when DOM is ready
   page.on('dom-ready', () => {
-    readProfilePage(page)
+    readProfilePage(page).then(res => {
+      console.log(res)
+    })
   })
 
   // Open links in external applications
@@ -156,18 +159,26 @@ function readProfilePage(page) {
         };
       });
     `
-
-  page.webContents.executeJavaScript(jscode, true).then((result) => {
-    if (!result)
-      return
-    let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
-    posts = selectPostsWithDate(posts, date_range)
-    console.log(posts)
-    getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
-      res => console.log(parsePostPage(res))
-    )
-    // console.log(posts)
+  if (posts)
+    return new Promise(function (resolve, reject) { resolve(posts) })
+  return page.webContents.executeJavaScript(jscode, true).then(result => {
+    posts = cleanPostsdata(result)
+    return posts
   })
+  // page.webContents.executeJavaScript(jscode, true).then((result) => {
+  //   if (!result)
+  //     return
+  //   posts = result
+  //   // let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
+  //   // posts = selectPostsWithDate(posts, date_range)
+  //   // console.log(posts)
+  //   // getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
+  //   //   res => console.log(parsePostPage(res))
+  //   // )
+  //   // console.log(posts)
+  // }).catch( (error) =>{
+  //   console.log(error)
+  // })
 }
 
 function cleanPostsdata(posts) {
