@@ -15,229 +15,85 @@ function sendAction (action) {
   win.webContents.send(action)
 }
 
-const helpSubmenu = [
+const template = [
   {
-    label: `${appName} Website`,
-    click () {
-      shell.openExternal('https://github.com/terkelg/ramme')
-    }
-  },
-  {
-    label: 'Report an Issue...',
-    click () {
-      const body = `
-            <!-- Please succinctly describe your issue and steps to reproduce it. -->
-
-            -
-
-            ${app.name} ${app.getVersion()}
-            Electron ${process.versions.electron}
-            ${process.platform} ${process.arch} ${os.release()}`
-
-      shell.openExternal(`https://github.com/terkelg/ramme/issues/new?body=${encodeURIComponent(body)}`)
-    }
-  }
-]
-
-if (process.platform !== 'darwin') {
-  helpSubmenu.push({
-    type: 'separator'
-  }, {
-    role: 'about',
-    click () {
-      console.log(nativeImage.createFromPath(path.join(__dirname, 'assets/logo.png')))
-      dialog.showMessageBox({
-        title: `About ${appName}`,
-        message: `${appName} ${app.getVersion()}`,
-        detail: 'Created by Terkel Gjervig',
-        icon: nativeImage.createFromPath(path.join(__dirname, 'assets/logo.png')),
-        buttons: []
-      })
-    }
-  })
-}
-
-const template = [{
-  label: 'Edit',
-  submenu: [{
-    label: 'Back',
-    accelerator: 'Backspace',
-    enabled: false,
-    click () {
-      sendAction('go-back')
-      const win = BrowserWindow.getAllWindows()[0]
-      if (win.webContents.canGoBack()) {
-        win.webContents.goBack()
+    label: 'View',
+    submenu: [{
+      label: 'Reload',
+      accelerator: 'CmdOrCtrl+R',
+      click(item, focusedWindow) {
+        if (focusedWindow) focusedWindow.reload()
       }
-    }
-  },
-  {
-    type: 'separator'
-  },
-  {
-    role: 'undo'
-  },
-  {
-    role: 'redo'
-  },
-  {
-    type: 'separator'
-  },
-  {
-    role: 'cut'
-  },
-  {
-    role: 'copy'
-  },
-  {
-    role: 'paste'
-  },
-  {
-    role: 'pasteandmatchstyle'
-  },
-  {
-    role: 'delete'
-  },
-  {
-    role: 'selectall'
-  }
-  ]
-},
-{
-  label: 'View',
-  submenu: [{
-    label: 'Reload',
-    accelerator: 'CmdOrCtrl+R',
-    click (item, focusedWindow) {
-      if (focusedWindow) focusedWindow.reload()
-    }
-  },
-  {
-    label: 'Clear cache',
-    click (item, focusedWindow) {
-      if (focusedWindow) {
-        focusedWindow.webContents.session.clearCache(() => {
-          dialog.showMessageBox({
-            message: 'Cache cleared correctly!'
+    },
+    {
+      label: 'Clear cache',
+      click(item, focusedWindow) {
+        if (focusedWindow) {
+          focusedWindow.webContents.session.clearCache(() => {
+            dialog.showMessageBox({
+              message: 'Cache cleared correctly!'
+            })
+            focusedWindow.reload()
           })
-          focusedWindow.reload()
+        }
+      }
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Logout',
+      click() {
+        win.webContents.session.clearStorageData(() => {
+          win.webContents.loadURL('https://www.instagram.com/')
+          dialog.showMessageBox({
+            message: 'Logged out successfully!'
+          })
         })
       }
-    }
-  },
-  {
-    type: 'separator'
-  },
-  {
-    label: 'Home',
-    accelerator: 'CmdOrCtrl+1',
-    click () {
-      sendAction('navigate-home')
-    }
-  },
-  {
-    label: 'Discover',
-    accelerator: 'CmdOrCtrl+2',
-    click () {
-      sendAction('navigate-discover')
-    }
-  },
-  {
-    label: 'Upload',
-    accelerator: 'CmdOrCtrl+3',
-    click () {
-      sendAction('navigate-upload')
-    }
-  },
-  {
-    label: 'Notifications',
-    accelerator: 'CmdOrCtrl+4',
-    click () {
-      sendAction('navigate-notifications')
-    }
-  },
-  {
-    label: 'Profile',
-    accelerator: 'CmdOrCtrl+5',
-    click () {
-      sendAction('navigate-profile')
-    }
-  },
-  {
-    type: 'separator'
-  },
-  {
-    label: 'Scroll a post up',
-    accelerator: 'Shift+Up',
-    click () {
-      sendAction('navigate-up')
-    }
-  },
-  {
-    label: 'Scroll a post down',
-    accelerator: 'Shift+Down',
-    click () {
-      sendAction('navigate-down')
-    }
-  },
-  {
-    type: 'separator'
-  },
-  {
-    label: 'Logout',
-    click () {
-      win.webContents.session.clearStorageData(() => {
-        win.webContents.loadURL('https://www.instagram.com/')
-        dialog.showMessageBox({
-          message: 'Logged out successfully!'
-        })
-      })
-    }
-  },
-  {
-    type: 'separator'
-  },
-  {
-    type: 'checkbox',
-    checked: config.get('darkMode'),
-    label: 'Toggle Dark Mode',
-    accelerator: 'CmdOrCtrl+D',
-    click () {
-      sendAction('toggle-dark-mode')
-    }
-  },
-  {
-    label: 'Toggle Developer Tools',
-    type: 'checkbox',
-    accelerator: (function () {
-      if (process.platform === 'darwin') {
-        return 'Alt+Command+I'
-      } else {
-        return 'Ctrl+Shift+I'
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Toggle Developer Tools',
+      type: 'checkbox',
+      accelerator: (function () {
+        if (process.platform === 'darwin') {
+          return 'Alt+Command+I'
+        } else {
+          return 'Ctrl+Shift+I'
+        }
+      })(),
+      click: function (item, focusedWindow) {
+        if (focusedWindow) {
+          focusedWindow.toggleDevTools()
+        }
       }
-    })(),
-    click: function (item, focusedWindow) {
+    }
+    ]
+  },
+  {
+    label: 'Crawl this page',
+    click(item, focusedWindow) {
       if (focusedWindow) {
-        focusedWindow.toggleDevTools()
+        // dialog.showMessageBox({
+        //   message: 'Hi'
+        // })
+        sendAction('s')
       }
     }
+  },
+  {
+    role: 'window',
+    submenu: [{
+      role: 'minimize'
+    }, {
+      role: 'close'
+    }, {
+      role: 'quit'
+    }]
   }
-  ]
-},
-{
-  role: 'window',
-  submenu: [{
-    role: 'minimize'
-  }, {
-    role: 'close'
-  }, {
-    role: 'quit'
-  }]
-},
-{
-  role: 'help',
-  submenu: helpSubmenu
-}
 ]
 
 if (process.platform === 'darwin') {
@@ -252,7 +108,7 @@ if (process.platform === 'darwin') {
     {
       label: 'Toggle Dark Mode',
       accelerator: 'CmdOrCtrl+D',
-      click () {
+      click() {
         sendAction('toggle-dark-mode')
       }
     },
