@@ -113,10 +113,20 @@ function setupWindowEvents(win) {
  * mainWindowEvents
  */
 function setupWebContentsEvents(page) {
-
-  // Inject styles when DOM is ready
+  // you can Inject styles when DOM is ready
   page.on('dom-ready', () => {
-    let jscode = `
+    readProfilePage(page)
+  })
+
+  // Open links in external applications
+  page.on('new-window', (e, url) => {
+    e.preventDefault()
+    shell.openExternal(url)
+  })
+}
+
+function readProfilePage(page) {
+  let jscode = `
       new Promise(function (resolve, reject) {
         let data = window._sharedData
         data = data ? data.entry_data : undefined
@@ -147,26 +157,19 @@ function setupWebContentsEvents(page) {
       });
     `
 
-    page.webContents.executeJavaScript(jscode, true).then((result) => {
-      if (!result)
-        return
-      let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
-      posts = selectPostsWithDate(posts, date_range)
-      console.log(posts)
-      getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
-        res => console.log(parsePostPage(res))
-      )
-      // console.log(posts)
-    })
-
-  })
-
-  // Open links in external applications
-  page.on('new-window', (e, url) => {
-    e.preventDefault()
-    shell.openExternal(url)
+  page.webContents.executeJavaScript(jscode, true).then((result) => {
+    if (!result)
+      return
+    let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
+    posts = selectPostsWithDate(posts, date_range)
+    console.log(posts)
+    getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
+      res => console.log(parsePostPage(res))
+    )
+    // console.log(posts)
   })
 }
+
 function cleanPostsdata(posts) {
   let data = []
 
