@@ -43,59 +43,6 @@ function registerWindow(name, def) {
   return true
 }
 
-function intervalFunc() {
-  if (win) {
-    let jscode = "var comp = document.getElementById('back_button');" +
-      'if (comp == null){                                          ' +
-      "var element = document.getElementsByClassName('_tdn3u');    " +
-      "var para = document.createElement('div');                   " +
-      "para.setAttribute('class', '_k0d2z' );                      " +
-      "para.setAttribute('id', 'back_button' );                    " +
-      "var node = document.createTextNode('');                     " +
-      'para.appendChild(node);                                     ' +
-      'element[0].appendChild(para);                               ' +
-      "var element = document.getElementById('back_button');       " +
-      "var para = document.createElement('a');                     " +
-      "para.setAttribute('class', '_ttgfw' );                      " +
-      "para.setAttribute('id', 'back_button_a' );                  " +
-      "para.setAttribute('onclick','goBack()');                    " +
-      'element.appendChild(para);                                  ' +
-      "var element = document.getElementById('back_button_a');     " +
-      "var para = document.createElement('div');                   " +
-      "para.setAttribute('class', '_crp8c' );                      " +
-      "para.setAttribute('id', 'back_button_div' );                " +
-      "para.setAttribute('style', 'background-color: #262626;      " +
-      '                           border-radius: 50%;             ' +
-      "                           height: 24px; width: 24px;' );  " +
-      'element.appendChild(para);                                  ' +
-      "var para = document.createElement('script');                " +
-      "para.setAttribute('type', 'text/javascript' );              " +
-      "var node = document.createTextNode('function goBack() {     " +
-      '                   window.history.back();                   ' +
-      "                                                       }'); " +
-      'para.appendChild(node);                                     ' +
-      'document.head.appendChild(para);}                           '
-
-    win.webContents.executeJavaScript(jscode)
-  }
-}
-
-// setInterval(asfhgk, 50)
-// function asfhgk() {
-//   if (win) {
-//     let jscode = `
-//     new Promise(function(resolve, reject) {
-//       let data = []
-//       const as = document.querySelectorAll('article a')
-//       as.forEach( item => data.push(item.href))
-//       resolve(data)
-//     });
-//     `
-//     win.webContents.executeJavaScript(jscode, true).then((result) => {
-//       console.log(result) // Will be the JSON object from the fetch call
-//     })
-//   }
-// }
 // [function] Open Window
 function openWindow(name) {
   if (registeredWindows[name]) {
