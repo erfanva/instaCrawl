@@ -6,6 +6,41 @@ const config = require('../../main/config')
 const $ = document.querySelector.bind(document)
 
 var post = 0
+let posts = null
+
+ipcRenderer.on('start_crawl', (e, arg) => {
+  let data = window._sharedData
+  data = data ? data.entry_data : undefined
+  data = data ? data.ProfilePage[0].graphql.user : undefined
+
+  if (!data)
+    ipcRenderer.send('end_crawl', null)
+
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+
+  data = data.edge_owner_to_timeline_media.edges
+  // resolve(data.edge_owner_to_timeline_media)
+  if(posts != null){
+    ipcRenderer.send('end_crawl', posts)
+    return
+  }
+  XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function (value) {
+    this.addEventListener("load", function (e) {
+      const d = JSON.parse(e.currentTarget.response);
+      if (d.data && d.data.user && d.data.user.edge_owner_to_timeline_media) {
+        data = data.concat(d.data.user.edge_owner_to_timeline_media.edges)
+        if (!d.data.user.edge_owner_to_timeline_media.page_info.has_next_page) {
+          XMLHttpRequest.prototype.send = XMLHttpRequest.prototype.realSend
+          posts = data
+          ipcRenderer.send('end_crawl', data)
+        }
+      }
+      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+    }, false);
+    this.realSend(value);
+  };
+})
 
 ipcRenderer.on('toggle-dark-mode', () => {
   config.set('darkMode', !config.get('darkMode'))

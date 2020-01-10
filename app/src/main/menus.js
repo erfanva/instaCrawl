@@ -15,6 +15,11 @@ function sendAction (action) {
   win.webContents.send(action)
 }
 
+function openSettings () {
+  const windowModule = require('./window.js')
+  windowModule.open("settings").removeMenu() 
+}
+
 const template = [
   {
     label: 'View',
@@ -52,49 +57,47 @@ const template = [
         })
       }
     },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Toggle Developer Tools',
-      type: 'checkbox',
-      accelerator: (function () {
-        if (process.platform === 'darwin') {
-          return 'Alt+Command+I'
-        } else {
-          return 'Ctrl+Shift+I'
-        }
-      })(),
-      click: function (item, focusedWindow) {
-        if (focusedWindow) {
-          focusedWindow.toggleDevTools()
-        }
-      }
-    }
+    // {
+    //   type: 'separator'
+    // },
+    // {
+    //   label: 'Toggle Developer Tools',
+    //   type: 'checkbox',
+    //   accelerator: (function () {
+    //     if (process.platform === 'darwin') {
+    //       return 'Alt+Command+I'
+    //     } else {
+    //       return 'Ctrl+Shift+I'
+    //     }
+    //   })(),
+    //   click: function (item, focusedWindow) {
+    //     if (focusedWindow) {
+    //       focusedWindow.toggleDevTools()
+    //     }
+    //   }
+    // }
     ]
   },
   {
     label: 'Crawl this page',
     click(item, focusedWindow) {
       if (focusedWindow) {
-        // dialog.showMessageBox({
-        //   message: 'Hi'
-        // })
         sendAction('start_crawl')
       }
     }
   },
-  {
-    label: 'Settings',
-    click(item, focusedWindow) {
-      if (focusedWindow) {
-        // dialog.showMessageBox({
-        //   message: 'Hi'
-        // })
-        sendAction('open_settings')
-      }
-    }
-  },
+  // {
+  //   label: 'Settings',
+  //   click(item, focusedWindow) {
+  //     if (focusedWindow) {
+  //       // dialog.showMessageBox({
+  //       //   message: 'Hi'
+  //       // })
+  //       openSettings ()
+  //       // sendAction('open_settings')
+  //     }
+  //   }
+  // },
   {
     role: 'window',
     submenu: [{

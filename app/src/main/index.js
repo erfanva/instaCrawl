@@ -18,9 +18,7 @@ const baseUrl = 'https://www.instagram.com/'
 let date_range = {}
 let posts
 
-function getWinConfig(url, rend) {
-  rend = rend || path.join(__dirname, renderer.js, 'index.js')
-  console.log(rend)
+function getWinConfig(url, node = false, rend = false) {
   return {
     url: url,
     useLastState: true,
@@ -37,8 +35,8 @@ function getWinConfig(url, rend) {
     titleBarStyle: 'hidden-inset',
     autoHideMenuBar: false,
     webPreferences: {
-      preload: rend,
-      nodeIntegration: false,
+      preload: !node && path.join(__dirname, renderer.js, 'index.js'),
+      nodeIntegration: node,
       partition: 'persist:my-session-name'
     }
   }
@@ -48,25 +46,24 @@ function getWinConfig(url, rend) {
  * Register Windows
  */
 
-window.register('main', getWinConfig(baseUrl + 'erfan_v_a/'))
+window.register('main', getWinConfig(baseUrl))
 
 // window.register('main2', getWinConfig(baseUrl))
 window.register('settings',
-  getWinConfig(
-    path.join('file://', __dirname, '../renderer/html/crawlSettings.html'),
-    path.join(__dirname, renderer.js, 'settings.js')
-  )
+  getWinConfig(path.join('file://', __dirname, '../renderer/html/crawlSettings.html'), true)
 )
 
 /**
  * Kick off!
  */
 app.on('ready', () => {
+  // // Open Settings
+  // let settingsWindow = window.open('settings')
+
   // Open main window
   let mainWindow = window.open('main')
 
-  // Open Settings
-  window.open('settings')
+  // setupWindowEvents(settingsWindow)
   setupWindowEvents(mainWindow)
 
   // Create menus
@@ -92,10 +89,19 @@ app.on('window-all-closed', function () {
  * Communicate with renderer process (web page)
  */
 ipcMain.on('set_date_range', (e, arg) => {
-  let page = e.sender.webContents
+  let page = e.sender
   console.log(arg)
   date_range = arg
-  console.log(posts)
+  const postsInRange = selectPostsWithDate(posts, date_range)
+  page.send('set_date_range_response', postsInRange)
+  console.log(postsInRange)
+  console.log("set_data_range")
+})
+ipcMain.on('end_crawl', (e, arg) => {
+  let page = e.sender
+  posts = cleanPostsdata(arg)
+  console.log("end_crawl")
+  window.open("settings").removeMenu() 
 })
 
 /**
@@ -103,7 +109,8 @@ ipcMain.on('set_date_range', (e, arg) => {
  */
 function setupWindowEvents(win) {
   win.on('close', e => {
-    win = null;
+    // Todo: correct closing proccess
+    app.quit()
   })
   win.on('page-title-updated', e => {
     e.preventDefault()
@@ -116,9 +123,9 @@ function setupWindowEvents(win) {
 function setupWebContentsEvents(page) {
   // you can Inject styles when DOM is ready
   page.on('dom-ready', () => {
-    readProfilePage(page).then(res => {
-      console.log(res)
-    })
+    // readProfilePage(page).then(res => {
+    //   console.log(res)
+    // })
   })
 
   // Open links in external applications
@@ -191,11 +198,13 @@ function cleanPostsdata(posts) {
     const likes_count = (post.edge_liked_by || post.edge_media_preview_like).count
     const shortcode = post.shortcode
     const date = post.taken_at_timestamp
+    const preview_display_url = post.display_url
     data.push({
       is_video: is_video,
       comments_count: comments_count,
       likes_count: likes_count,
       url: baseUrl + 'p/' + shortcode,
+      preview_display_url: preview_display_url,
       date: date
     })
   });

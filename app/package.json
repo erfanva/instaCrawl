@@ -3,7 +3,7 @@
     "productName": "Instagram Crawler",
     "main": "src/main",
     "private": true,
-    "version": "3.2.6",
+    "version": "0.1.1",
     "description": "Instagram Crawl Desktop App",
     "license": "MIT",
     "author": "Erfan Vahabi <erfanv1@gmail.com> ",
