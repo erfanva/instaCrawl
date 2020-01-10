@@ -15,55 +15,61 @@ const renderer = {
 }
 
 const baseUrl = 'https://www.instagram.com/'
+let date_range = {}
+
+function getWinConfig(url, rend) {
+  rend = rend || path.join(__dirname, renderer.js, 'index.js')
+  console.log(rend)
+  return {
+    url: url,
+    useLastState: true,
+    fakeUserAgent: true,
+    defaultWindowEvents: false,
+    show: false,
+    minHeight: 480,
+    minWidth: 380,
+    maxWidth: 550,
+    width: 460,
+    height: 700,
+    maximizable: false,
+    fullscreenable: false,
+    titleBarStyle: 'hidden-inset',
+    autoHideMenuBar: false,
+    webPreferences: {
+      preload: rend,
+      nodeIntegration: false,
+      partition: 'persist:my-session-name'
+    }
+  }
+}
 
 /**
  * Register Windows
  */
 
-window.register('main', {
-  url: baseUrl + 'erfan_v_a/',
-  useLastState: true,
-  fakeUserAgent: true,
-  defaultWindowEvents: false,
-  show: false,
-  minHeight: 480,
-  minWidth: 380,
-  maxWidth: 550,
-  maximizable: false,
-  fullscreenable: false,
-  titleBarStyle: 'hidden-inset',
-  autoHideMenuBar: true,
-  webPreferences: {
-    preload: path.join(__dirname, renderer.js, 'index.js'),
-    nodeIntegration: false,
-    partition: 'persist:my-session-name'
-  }
-})
+window.register('main', getWinConfig(baseUrl + 'erfan_v_a/'))
 
-window.register('preload', {
-  url: path.join('file://', __dirname, '../renderer/html/preload.html'),
-  useLastState: true,
-  width: 200,
-  height: 400,
-  resizable: false,
-  fullscreenable: false,
-  maximizable: false,
-  frame: false
-})
+// window.register('main2', getWinConfig(baseUrl))
+window.register('settings',
+  getWinConfig(
+    path.join('file://', __dirname, '../renderer/html/crawlSettings.html'),
+    path.join(__dirname, renderer.js, 'settings.js')
+  )
+)
 
 /**
  * Kick off!
  */
 app.on('ready', () => {
-  // Open preload window
-  window.open('preload')
-
   // Open main window
   let mainWindow = window.open('main')
+
+  // Open Settings
+  window.open('settings')
   setupWindowEvents(mainWindow)
 
   // Create menus
-  // Menu.setApplicationMenu(appMenu)
+  Menu.setApplicationMenu(appMenu)
   // tray.createTray(mainWindow)
 
   // Update and analytics
@@ -84,27 +90,19 @@ app.on('window-all-closed', function () {
 /**
  * Communicate with renderer process (web page)
  */
-ipcMain.on('back', (e, arg) => {
+ipcMain.on('set_date_range', (e, arg) => {
   let page = e.sender.webContents
-  if (page.canGoBack()) {
-    page.goBack()
-  }
+  console.log(arg)
+  date_range = arg
+  window.open('main')
 })
 
-ipcMain.on('home', (e, arg) => {
-  let page = e.sender.webContents
-  page.loadURL('https://www.instagram.com/?utm_source=ig_lite', {
-    userAgent: 'Mozilla/5.0 (Linux; Android 8.0.0; Android SDK built for x86 Build/OSR1.170901.043; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/66.0.3359.158 Mobile Safari/537.36 InstagramLite 1.0.0.0.145 Android (26/8.0.0; 420dpi; 1080x1794; Google/google; Android SDK built for x86; generic_x86; ranchu; en_US; 115357035)'
-  })
-  page.clearHistory()
-})
 /**
  * setupWindowEvents
  */
 function setupWindowEvents(win) {
   win.on('close', e => {
     win = null;
-
   })
   win.on('page-title-updated', e => {
     e.preventDefault()
@@ -150,9 +148,11 @@ function setupWebContentsEvents(page) {
     `
 
     page.webContents.executeJavaScript(jscode, true).then((result) => {
-      if(!result)
+      if (!result)
         return
       let posts = cleanPostsdata(result) // Will be the JSON object from the fetch call
+      posts = selectPostsWithDate(posts, date_range)
+      console.log(posts)
       getPage("https://www.instagram.com/p/BNcstR2BLny/").then(
         res => console.log(parsePostPage(res))
       )
@@ -184,6 +184,16 @@ function cleanPostsdata(posts) {
       url: baseUrl + 'p/' + shortcode,
       date: date
     })
+  });
+  return data
+}
+
+function selectPostsWithDate(posts, date_range) {
+  let data = []
+  posts.forEach(post => {
+    if ((!date_range.from || post.date >= date_range.from) &&
+      (!date_range.to || post.date <= date_range.to))
+      data.push(post)
   });
   return data
 }
