@@ -1,5 +1,6 @@
 {
     "name": "instagramcrawl",
+    "productName": "Instagram Crawler",
     "main": "src/main",
     "private": true,
     "version": "3.2.6",

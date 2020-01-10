@@ -1,5 +1,5 @@
 {
-    "repository": "terkelg/ramme",
+    "repository": "erfanva/instaCrawl",
     "author": "Erfan Vahabi",
     "license": "MIT",
     "scripts": {
@@ -13,6 +13,7 @@
         "dist": "yarn build && build --ia32 --x64"
     },
     "build": {
+        "productName": "Instagram Crawler",
         "appId": "com.erfanva.instacrawl",
         "mac": {
             "category": "public.app-category.social-networking"

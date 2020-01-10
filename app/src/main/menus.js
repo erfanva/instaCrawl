@@ -4,7 +4,7 @@ const isPlatform = require('./../common/is-platform')
 const {app, BrowserWindow, Menu, shell, dialog, nativeImage} = require('electron')
 const config = require('./config')
 const win = BrowserWindow.getAllWindows()[0]
-const appName = app.name
+const appName = app.productName
 
 function sendAction (action) {
   const win = BrowserWindow.getAllWindows()[0]

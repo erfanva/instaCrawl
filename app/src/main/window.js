@@ -26,7 +26,7 @@ function registerWindow(name, def) {
   delete def.url
 
   def.icon = isPlatform('linux') ? path.join(__dirname, '../assets/icon.png') : null
-  def.title = def.title || app.name
+  def.title = def.title || app.productName
   def.darkTheme = isDarkMode
   def.backgroundColor = isDarkMode ? '#192633' : '#fff'
 
