@@ -80,7 +80,18 @@ const template = [
         // dialog.showMessageBox({
         //   message: 'Hi'
         // })
-        sendAction('s')
+        sendAction('start_crawl')
+      }
+    }
+  },
+  {
+    label: 'Settings',
+    click(item, focusedWindow) {
+      if (focusedWindow) {
+        // dialog.showMessageBox({
+        //   message: 'Hi'
+        // })
+        sendAction('open_settings')
       }
     }
   },
