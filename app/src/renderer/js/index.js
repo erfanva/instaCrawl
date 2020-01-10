@@ -5,41 +5,51 @@ const config = require('../../main/config')
 
 const $ = document.querySelector.bind(document)
 
+let posts = []
+let has_next_page = false
+let is_crawling = false
+XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
+XMLHttpRequest.prototype.send = function (value) {
+  this.addEventListener("load", function (e) {
+    let d = JSON.parse(e.currentTarget.response);
+    d = d.data ? d.data : d.graphql
+    if (d && d.user && d.user.edge_owner_to_timeline_media) {
+      posts = posts.concat(d.user.edge_owner_to_timeline_media.edges)
+      has_next_page = d.user.edge_owner_to_timeline_media.page_info.has_next_page
+      ipcRenderer.send('console_log', posts.length)
+      if (has_next_page && is_crawling)
+        setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+      if (!has_next_page && is_crawling) {
+        is_crawling = false
+        ipcRenderer.send('end_crawl', posts)
+      }
+    }
+  }, false);
+  this.realSend(value);
+};
+
 var post = 0
-let posts = null
 
 ipcRenderer.on('start_crawl', (e, arg) => {
   let data = window._sharedData
   data = data ? data.entry_data : undefined
-  data = data ? data.ProfilePage[0].graphql.user : undefined
+  data = data ? data.ProfilePage : undefined
+  data = data ? data[0] : undefined
+  data = data ? data.graphql : undefined
+  data = data ? data.user : undefined
 
-  if (!data)
-    ipcRenderer.send('end_crawl', null)
+  data = data ? data.edge_owner_to_timeline_media : undefined
+  has_next_page = data ? data.page_info.has_next_page : has_next_page
 
-  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
+  if (data)
+    posts.concat(data)
 
-  data = data.edge_owner_to_timeline_media.edges
-  // resolve(data.edge_owner_to_timeline_media)
-  if(posts != null){
+  if (!has_next_page) {
     ipcRenderer.send('end_crawl', posts)
     return
   }
-  XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.send = function (value) {
-    this.addEventListener("load", function (e) {
-      const d = JSON.parse(e.currentTarget.response);
-      if (d.data && d.data.user && d.data.user.edge_owner_to_timeline_media) {
-        data = data.concat(d.data.user.edge_owner_to_timeline_media.edges)
-        if (!d.data.user.edge_owner_to_timeline_media.page_info.has_next_page) {
-          XMLHttpRequest.prototype.send = XMLHttpRequest.prototype.realSend
-          posts = data
-          ipcRenderer.send('end_crawl', data)
-        }
-      }
-      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
-    }, false);
-    this.realSend(value);
-  };
+  is_crawling = true
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
 })
 
 ipcRenderer.on('toggle-dark-mode', () => {
@@ -166,27 +176,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   // Initialize darkMode settings
   setDarkMode()
-
-  // Get data
-  /*const data = window._sharedData.entry_data.ProfilePage[0].graphql.user
-
-  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
-
-  let commulativeData = data.edge_owner_to_timeline_media.edges
-  // resolve(data.edge_owner_to_timeline_media)
-  XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.send = function (value) {
-    this.addEventListener("load", function (e) {
-      const d = JSON.parse(e.currentTarget.response);
-      if (d.data && d.data.user && d.data.user.edge_owner_to_timeline_media) {
-        commulativeData = commulativeData.concat(d.data.user.edge_owner_to_timeline_media.edges)
-        if (!d.data.user.edge_owner_to_timeline_media.page_info.has_next_page)
-          ipcRenderer.send("dataLoaded")
-      }
-      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
-    }, false);
-    this.realSend(value);
-  };*/
 
   // Fix 404 pages
   elementReady('.dialog-404').then(fix404)
