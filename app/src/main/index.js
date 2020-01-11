@@ -4,14 +4,20 @@ const { app, Menu, shell, ipcMain, session, net } = require('electron')
 const tray = require('./tray')
 const appMenu = require('./menus')
 
-const updater = require('./updater')
+// const updater = require('./updater')
 const analytics = require('./analytics')
 const isPlatform = require('./../common/is-platform')
 const window = require('./window.js')
 
 const renderer = {
-  styles: '../../dist/renderer/styles',
-  js: '../../dist/renderer/js'
+  styles: '../../src/renderer/styles',
+  js: '../../src/renderer/js',
+  here: 'src/main/'
+}
+const correctPath = (...p) => {
+  let res = path.join(app.getAppPath(), 'src/main/')
+  p.forEach(t => res = path.join(res, t))
+  return res
 }
 
 const baseUrl = 'https://www.instagram.com/'
@@ -35,7 +41,7 @@ function getWinConfig(url, node = false, rend = false) {
     titleBarStyle: 'hidden-inset',
     autoHideMenuBar: false,
     webPreferences: {
-      preload: !node && path.join(__dirname, renderer.js, 'index.js'),
+      preload: !node && correctPath(renderer.js, 'index.js'),
       nodeIntegration: node,
       partition: 'persist:my-session-name'
     }
@@ -50,7 +56,7 @@ window.register('main', getWinConfig(baseUrl))
 
 // window.register('main2', getWinConfig(baseUrl))
 window.register('settings',
-  getWinConfig(path.join('file://', __dirname, '../renderer/html/crawlSettings.html'), true)
+  getWinConfig(path.join('file://', correctPath('../renderer/html/crawlSettings.html')), true)
 )
 
 /**
@@ -59,7 +65,7 @@ window.register('settings',
 app.on('ready', () => {
   // // Open Settings
   // let settingsWindow = window.open('settings')
-
+  console.log(correctPath(renderer.js, 'index.js'), path.join(__dirname, renderer.js, 'index.js'))
   // Open main window
   let mainWindow = window.open('main')
 
@@ -71,7 +77,7 @@ app.on('ready', () => {
   // tray.createTray(mainWindow)
 
   // Update and analytics
-  updater.init(mainWindow)
+  // updater.init(mainWindow)
   analytics.init()
 
   // Setup events
