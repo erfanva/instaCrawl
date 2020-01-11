@@ -27,7 +27,7 @@ XMLHttpRequest.prototype.send = function (value) {
   }, false);
   this.realSend(value);
 };
-
+ipcRenderer.send('console_log', "index renderer loaded")
 var post = 0
 
 ipcRenderer.on('start_crawl', (e, arg) => {
