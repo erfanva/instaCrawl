@@ -1,4 +1,6 @@
 
+const BASE_URL = 'https://www.instagram.com/'
+
 function cleanPostsdata(posts) {
     let data = []
   
@@ -14,7 +16,7 @@ function cleanPostsdata(posts) {
         is_video: is_video,
         comments_count: comments_count,
         likes_count: likes_count,
-        url: baseUrl + 'p/' + shortcode,
+        url: BASE_URL + 'p/' + shortcode,
         preview_display_url: preview_display_url,
         date: date
       })
@@ -80,6 +82,7 @@ function cleanPostsdata(posts) {
   }
 
   module.exports = {
+    BASE_URL: BASE_URL,
     cleanPostsdata: cleanPostsdata,
     selectPostsWithDate: selectPostsWithDate,
     getPage: getPage,

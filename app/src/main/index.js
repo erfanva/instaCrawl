@@ -21,7 +21,7 @@ const correctPath = (...p) => {
   return res
 }
 
-const baseUrl = 'https://www.instagram.com/'
+const BASE_URL = ifunc.BASE_URL
 let date_range = {}
 let posts
 
@@ -53,9 +53,9 @@ function getWinConfig(url, node = false) {
  * Register Windows
  */
 
-window.register('main', getWinConfig(baseUrl))
+window.register('main', getWinConfig(BASE_URL))
 
-// window.register('main2', getWinConfig(baseUrl))
+// window.register('main2', getWinConfig(BASE_URL))
 window.register('settings',
   getWinConfig(path.join('file://', correctPath('../renderer/html/crawlSettings.html')), true)
 )
