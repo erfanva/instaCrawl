@@ -25,7 +25,7 @@ const baseUrl = 'https://www.instagram.com/'
 let date_range = {}
 let posts
 
-function getWinConfig(url, node = false, rend = false) {
+function getWinConfig(url, node = false) {
   return {
     url: url,
     useLastState: true,
