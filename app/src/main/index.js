@@ -106,8 +106,7 @@ ipcMain.on('set_date_range', (e, arg) => {
 })
 ipcMain.on('end_crawl', (e, arg) => {
   let page = e.sender
-  posts = ifunc.cleanPostsdata(arg)
-  console.log(posts)
+  posts = arg
   if(posts.length > 0)
     window.open("settings").removeMenu() 
 })
