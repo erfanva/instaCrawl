@@ -34,7 +34,7 @@ function getWinConfig(url, node = false) {
     show: false,
     minHeight: 480,
     minWidth: 380,
-    maxWidth: 550,
+    // maxWidth: 550,
     width: 460,
     height: 700,
     maximizable: false,
@@ -66,7 +66,7 @@ window.register('settings',
 app.on('ready', () => {
   // // Open Settings
   // let settingsWindow = window.open('settings')
-  console.log(correctPath(renderer.js, 'index.js'), path.join(__dirname, renderer.js, 'index.js'))
+  
   // Open main window
   let mainWindow = window.open('main')
 
