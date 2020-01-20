@@ -86,18 +86,18 @@ const template = [
       }
     }
   },
-  // {
-  //   label: 'Settings',
-  //   click(item, focusedWindow) {
-  //     if (focusedWindow) {
-  //       // dialog.showMessageBox({
-  //       //   message: 'Hi'
-  //       // })
-  //       openSettings ()
-  //       // sendAction('open_settings')
-  //     }
-  //   }
-  // },
+  {
+    label: 'Settings',
+    click(item, focusedWindow) {
+      if (focusedWindow) {
+        // dialog.showMessageBox({
+        //   message: 'Hi'
+        // })
+        openSettings ()
+        // sendAction('open_settings')
+      }
+    }
+  },
   {
     role: 'window',
     submenu: [{
