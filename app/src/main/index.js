@@ -125,9 +125,11 @@ ipcMain.on('show_crawled_loaded', (e, arg) => {
   const postsInRange = ifunc.selectPostsWithDate(posts, date_range)
   page.send('show_crawled', postsInRange)
 })
-
-ipcMain.on('console_log', (e, arg) => {
-  console.log(arg)
+ipcMain.on('get_date_range', (e, arg) => {
+  e.sender.send('get_date_range_res', date_range)
+})
+ipcMain.on('console_log', (e, ...arg) => {
+  console.log(...arg)
 })
 
 /**
