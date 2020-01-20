@@ -18,7 +18,8 @@ function registerWindow(name, def) {
   const fakeUserAgent = def.fakeUserAgent
   const defaultWindowEvents = def.defaultWindowEvents
   const isDarkMode = config.get('darkMode') || false
-  const userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+  const userAgent = 'Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; Trident/6.0; IEMobile/10.0; ARM; Touch; NOKIA; Lumia 520)'
+  //'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
 
   delete def.useLastState
   delete def.fakeUserAgent
