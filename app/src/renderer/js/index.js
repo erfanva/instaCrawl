@@ -6,20 +6,21 @@ const ifunc = require('./../../common/insta-functions')
 
 const $ = document.querySelector.bind(document)
 
+let date_range = {}
 let posts = {}
 let has_next_page = false
 let is_crawling = false
 let page_owner
 let need_follow, blocked
 XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
-XMLHttpRequest.prototype.send = function (value) { 
+XMLHttpRequest.prototype.send = function (value) {
   // main send function:)
   this.realSend(value);
 
   // find page owner username
-  if(window.location.pathname.slice(0,2) != "/p/")
-    page_owner = window.location.pathname.slice(1,-1).split("/")[0]
-  
+  if (window.location.pathname.slice(0, 2) != "/p/")
+    page_owner = window.location.pathname.slice(1, -1).split("/")[0]
+
   this.addEventListener("load", function (e) {
     let d = JSON.parse(e.currentTarget.response);
     d = d.data ? d.data : d.graphql
@@ -28,24 +29,27 @@ XMLHttpRequest.prototype.send = function (value) {
       d = d.user
       blocked = d.has_blocked_viewer
       need_follow = d.is_private && !d.followed_by_viewer
-      if(blocked || need_follow)
+      if (blocked || need_follow)
         return
 
       const newPosts = ifunc.cleanPostsdata(d.edge_owner_to_timeline_media.edges)
 
       const has_same_owner = newPosts[0].owner == page_owner
-      const is_new = posts[page_owner] ? posts[page_owner].find(x => x.id === newPosts[newPosts.length-1].id) == undefined : true;
-      if(is_new)
+      has_next_page = has_same_owner && d.edge_owner_to_timeline_media.page_info.has_next_page
+
+      const is_new = posts[page_owner] ? posts[page_owner].find(x => x.id === newPosts[newPosts.length - 1].id) == undefined : true;
+      if (is_new)
         posts[page_owner] = posts[page_owner] ? posts[page_owner].concat(newPosts) : newPosts
-      
+
       console.log(posts)
 
-      has_next_page = has_same_owner && d.edge_owner_to_timeline_media.page_info.has_next_page
-      ipcRenderer.send('console_log', newPosts)
       if (has_next_page && is_crawling)
         setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
-      if (!has_next_page && is_crawling) {
+
+      if ((!has_next_page || posts[page_owner][posts[page_owner].length - 1].date < date_range.from)
+        && is_crawling) {
         is_crawling = false
+        ipcRenderer.send('console_log', "end_crawl")
         ipcRenderer.send('end_crawl', posts[page_owner])
       }
     }
@@ -54,27 +58,27 @@ XMLHttpRequest.prototype.send = function (value) {
 ipcRenderer.send('console_log', "index renderer loaded")
 
 ipcRenderer.on('start_crawl', (e, arg) => {
-  if(blocked)
+  if (blocked)
     alert("You are blocked from this user!")
-  if(need_follow)
+  if (need_follow)
     alert("You need to follow this page!")
-  if(!page_owner || blocked || need_follow)
+  if (!page_owner || blocked || need_follow)
     return
-  
-  let data = window._sharedData
-  data = data ? data.entry_data : undefined
-  data = data ? data.ProfilePage : undefined
-  data = data ? data[0] : undefined
-  data = data ? data.graphql : undefined
-  data = data ? data.user : undefined
 
-  data = data ? data.edge_owner_to_timeline_media : undefined
-  has_next_page = data ? data.page_info.has_next_page : has_next_page
+  // let data = window._sharedData
+  // data = data ? data.entry_data : undefined
+  // data = data ? data.ProfilePage : undefined
+  // data = data ? data[0] : undefined
+  // data = data ? data.graphql : undefined
+  // data = data ? data.user : undefined
 
-  if (data)
-    posts[page_owner].concat(data)
+  // data = data ? data.edge_owner_to_timeline_media : undefined
+  // has_next_page = data ? data.page_info.has_next_page : has_next_page
 
-  if (!has_next_page) {
+  // if (data)
+  //   posts[page_owner].concat(data)
+
+  if (!has_next_page || posts[page_owner][posts[page_owner].length - 1].date < date_range.from) {
     ipcRenderer.send('end_crawl', posts[page_owner])
     return
   }
@@ -82,6 +86,11 @@ ipcRenderer.on('start_crawl', (e, arg) => {
   setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
 })
 
+
+ipcRenderer.on('set_date_range_main', (e, arg) => {
+  ipcRenderer.send('console_log', "rend:", arg)
+  date_range = arg
+})
 // ipcRenderer.on('toggle-dark-mode', () => {
 //   config.set('darkMode', !config.get('darkMode'))
 //   setDarkMode()
