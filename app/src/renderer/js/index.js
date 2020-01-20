@@ -6,40 +6,61 @@ const ifunc = require('./../../common/insta-functions')
 
 const $ = document.querySelector.bind(document)
 
-let posts = []
+let posts = {}
 let has_next_page = false
 let is_crawling = false
+let page_owner
+let need_follow, blocked
 XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
-XMLHttpRequest.prototype.send = function (value) {
+XMLHttpRequest.prototype.send = function (value) { 
+  // main send function:)
+  this.realSend(value);
+
+  // find page owner username
+  if(window.location.pathname.slice(0,2) != "/p/")
+    page_owner = window.location.pathname.slice(1,-1).split("/")[0]
+  
   this.addEventListener("load", function (e) {
     let d = JSON.parse(e.currentTarget.response);
     d = d.data ? d.data : d.graphql
+
     if (d && d.user && d.user.edge_owner_to_timeline_media) {
-      const newPosts = ifunc.cleanPostsdata(d.user.edge_owner_to_timeline_media.edges)
-      
-      //
-      console.log(d.user.edge_owner_to_timeline_media.edges)
+      d = d.user
+      blocked = d.has_blocked_viewer
+      need_follow = d.is_private && !d.followed_by_viewer
+      if(blocked || need_follow)
+        return
 
-      const is_new = posts.find(x => x.id === newPosts[newPosts.length-1].id) == undefined;
+      const newPosts = ifunc.cleanPostsdata(d.edge_owner_to_timeline_media.edges)
+
+      const has_same_owner = newPosts[0].owner == page_owner
+      const is_new = posts[page_owner] ? posts[page_owner].find(x => x.id === newPosts[newPosts.length-1].id) == undefined : true;
       if(is_new)
-        posts = posts.concat(newPosts)
+        posts[page_owner] = posts[page_owner] ? posts[page_owner].concat(newPosts) : newPosts
+      
+      console.log(posts)
 
-      has_next_page = d.user.edge_owner_to_timeline_media.page_info.has_next_page
-      ipcRenderer.send('console_log', newPosts, posts.length)
+      has_next_page = has_same_owner && d.edge_owner_to_timeline_media.page_info.has_next_page
+      ipcRenderer.send('console_log', newPosts)
       if (has_next_page && is_crawling)
         setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
       if (!has_next_page && is_crawling) {
         is_crawling = false
-        ipcRenderer.send('end_crawl', posts)
+        ipcRenderer.send('end_crawl', posts[page_owner])
       }
     }
   }, false);
-  this.realSend(value);
 };
 ipcRenderer.send('console_log', "index renderer loaded")
-var post = 0
 
 ipcRenderer.on('start_crawl', (e, arg) => {
+  if(blocked)
+    alert("You are blocked from this user!")
+  if(need_follow)
+    alert("You need to follow this page!")
+  if(!page_owner || blocked || need_follow)
+    return
+  
   let data = window._sharedData
   data = data ? data.entry_data : undefined
   data = data ? data.ProfilePage : undefined
@@ -51,10 +72,10 @@ ipcRenderer.on('start_crawl', (e, arg) => {
   has_next_page = data ? data.page_info.has_next_page : has_next_page
 
   if (data)
-    posts.concat(data)
+    posts[page_owner].concat(data)
 
   if (!has_next_page) {
-    ipcRenderer.send('end_crawl', posts)
+    ipcRenderer.send('end_crawl', posts[page_owner])
     return
   }
   is_crawling = true
