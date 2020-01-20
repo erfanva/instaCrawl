@@ -25,8 +25,8 @@ const BASE_URL = ifunc.BASE_URL
 let date_range = {}
 let posts
 
-function getWinConfig(url, node = false) {
-  return {
+function getWinConfig(url, node = false, new_config = {}) {
+  let conf = {
     url: url,
     useLastState: true,
     fakeUserAgent: true,
@@ -47,6 +47,8 @@ function getWinConfig(url, node = false) {
       partition: 'persist:my-session-name'
     }
   }
+  Object.assign(conf, new_config)
+  return conf
 }
 
 /**
@@ -57,7 +59,11 @@ window.register('main', getWinConfig(BASE_URL))
 
 // window.register('main2', getWinConfig(BASE_URL))
 window.register('settings',
-  getWinConfig(path.join('file://', correctPath('../renderer/html/crawlSettings.html')), true)
+  getWinConfig(path.join('file://', correctPath('../renderer/html/crawlSettings.html')), true,
+  {
+    width: 460,
+    height: 480,
+  })
 )
 
 /**
