@@ -57,7 +57,6 @@ function getWinConfig(url, node = false, new_config = {}) {
 
 window.register('main', getWinConfig(BASE_URL))
 
-// window.register('main2', getWinConfig(BASE_URL))
 window.register('settings',
   getWinConfig(path.join('file://', correctPath('../renderer/html/settings.html')), true,
   {
@@ -65,6 +64,9 @@ window.register('settings',
     height: 480,
   })
 )
+
+window.register('show_crawled',
+  getWinConfig(path.join('file://', correctPath('../renderer/html/show_crawled.html')), true))
 
 /**
  * Kick off!
@@ -105,16 +107,23 @@ ipcMain.on('set_date_range', (e, arg) => {
   let page = e.sender
   console.log(arg)
   date_range = arg
-  const postsInRange = ifunc.selectPostsWithDate(posts, date_range)
-  page.send('set_date_range_response', postsInRange)
-  console.log(postsInRange)
-  console.log("set_data_range")
+  window.get("main").webContents.send('set_date_range_main', date_range)
+  // const postsInRange = ifunc.selectPostsWithDate(posts, date_range)
+  // page.send('set_date_range_response', postsInRange)
+  // console.log(postsInRange)
+  // console.log("set_data_range")
 })
 ipcMain.on('end_crawl', (e, arg) => {
   let page = e.sender
   posts = arg
-  if(posts.length > 0)
-    window.open("settings").removeMenu() 
+  if(posts.length > 0) {
+    window.open("show_crawled").removeMenu()
+  }
+})
+ipcMain.on('show_crawled_loaded', (e, arg) => {
+  let page = e.sender
+  const postsInRange = ifunc.selectPostsWithDate(posts, date_range)
+  page.send('show_crawled', postsInRange)
 })
 
 ipcMain.on('console_log', (e, arg) => {
