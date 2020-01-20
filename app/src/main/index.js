@@ -59,7 +59,7 @@ window.register('main', getWinConfig(BASE_URL))
 
 // window.register('main2', getWinConfig(BASE_URL))
 window.register('settings',
-  getWinConfig(path.join('file://', correctPath('../renderer/html/crawlSettings.html')), true,
+  getWinConfig(path.join('file://', correctPath('../renderer/html/settings.html')), true,
   {
     width: 460,
     height: 480,
