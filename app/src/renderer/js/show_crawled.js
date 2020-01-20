@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 function show_date_range() { 
   const from = new Date(date_range.from * 1000)
-  $('#date_from').innerHTML = arg.from ? from.toLocaleDateString(locales[l]) : "_"
+  $('#date_from').innerHTML = date_range.from ? from.toLocaleDateString(locales[l]) : "_"
   let to = new Date(date_range.to * 1000)
   to.setDate(to.getDate() - 1)
   $('#date_to').innerHTML = date_range.to ? to.toLocaleDateString(locales[l]) : "_"
