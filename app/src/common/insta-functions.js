@@ -7,7 +7,7 @@ function cleanPostsdata(posts) {
     posts.forEach(post => {
       post = post.node
       const id = post.id
-      const owner = post.owner
+      const owner = post.owner.username
       const is_video = post.is_video
       const comments_count = (post.edge_media_to_comment && post.edge_media_to_comment.count) || 0
       const likes_count = (post.edge_liked_by || post.edge_media_preview_like).count
