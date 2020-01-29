@@ -37,10 +37,19 @@ XMLHttpRequest.prototype.send = function (value) {
       const has_same_owner = newPosts[0].owner == page_owner
       has_next_page = has_same_owner && d.edge_owner_to_timeline_media.page_info.has_next_page
 
-      const is_new = posts[page_owner] ? posts[page_owner].find(x => x.id === newPosts[newPosts.length - 1].id) == undefined : true;
-      if (is_new)
-        posts[page_owner] = posts[page_owner] ? posts[page_owner].concat(newPosts) : newPosts
-
+      if (!posts[page_owner]) {
+        posts[page_owner] = newPosts.slice()
+      } else {
+        newPosts.forEach((newPost) => {
+          const index = posts[page_owner].findIndex(x => x.id === newPost.id)
+          if (index > -1) {
+            posts[page_owner][index] = newPost
+          } else {
+            posts[page_owner].push(newPost)
+          }
+        });
+      }
+      console.log(newPosts)
       console.log(posts)
 
       if (has_next_page && is_crawling)
