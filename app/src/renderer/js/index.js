@@ -67,12 +67,23 @@ XMLHttpRequest.prototype.send = function (value) {
 ipcRenderer.send('console_log', "index renderer loaded")
 
 ipcRenderer.on('start_crawl', (e, arg) => {
+  if (is_crawling) {
+    if (confirm("End crawling?")) {
+      is_crawling = false
+      ipcRenderer.send('end_crawl', posts[page_owner])
+      return false
+    }
+  }
   if (blocked)
     alert("You are blocked from this user!")
   if (need_follow)
     alert("You need to follow this page!")
   if (!page_owner || blocked || need_follow)
-    return
+    return false
+  if (!date_range.from) {
+    if (!confirm("You didnt select a from date. Are sure to crawl from first post?"))
+      return false
+  }
 
   // let data = window._sharedData
   // data = data ? data.entry_data : undefined
@@ -89,7 +100,7 @@ ipcRenderer.on('start_crawl', (e, arg) => {
 
   if (!has_next_page || posts[page_owner][posts[page_owner].length - 1].date < date_range.from) {
     ipcRenderer.send('end_crawl', posts[page_owner])
-    return
+    return false
   }
   is_crawling = true
   setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 25)
