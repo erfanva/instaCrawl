@@ -5,7 +5,7 @@ const tray = require('./tray')
 const appMenu = require('./menus')
 
 // const updater = require('./updater')
-const analytics = require('./analytics')
+// const analytics = require('./analytics')
 const isPlatform = require('./../common/is-platform')
 const ifunc = require('./../common/insta-functions')
 const window = require('./window.js')
@@ -87,7 +87,7 @@ app.on('ready', () => {
 
   // Update and analytics
   // updater.init(mainWindow)
-  analytics.init()
+  // analytics.init()
 
   // Setup events
   setupWebContentsEvents(mainWindow.webContents)
