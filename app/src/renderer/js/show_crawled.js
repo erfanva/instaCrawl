@@ -16,8 +16,10 @@ let date_range = {}
 ipcRenderer.on('download-progress', (e, arg) => {
   const { percent, file } = arg
   document.title = pageTitle + " - Downloading: " + percent + "%"
-  if (percent == 100)
+  if (percent == 100) {
     document.title = pageTitle
+    alert("Downloads completed!")
+  }
   update_progress(percent, file.id)
 })
 
