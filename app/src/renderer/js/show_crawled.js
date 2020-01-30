@@ -12,13 +12,15 @@ let l = 0
 
 let posts = []
 let date_range = {}
+let alerted = false
 
 ipcRenderer.on('download-progress', (e, arg) => {
   const { percent, file } = arg
   document.title = pageTitle + " - Downloading: " + percent + "%"
   if (percent == 100) {
     document.title = pageTitle
-    alert("Downloads completed!")
+    if (!alerted) alert("Downloads completed!")
+    alerted = true
   }
   update_progress(percent, file.id)
 })
@@ -57,7 +59,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     show_date_range()
   }
   $('#download').onclick = e => {
-    if(!$('#dl_count').validity.valid) {
+    if (!$('#dl_count').validity.valid) {
       alert("Downloads count is incorrect!")
       return false
     }
