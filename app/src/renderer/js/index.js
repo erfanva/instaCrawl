@@ -108,7 +108,6 @@ ipcRenderer.on('start_crawl', (e, arg) => {
 
 
 ipcRenderer.on('set_date_range_main', (e, arg) => {
-  ipcRenderer.send('console_log', "rend:", arg)
   date_range = arg
 })
 // ipcRenderer.on('toggle-dark-mode', () => {
