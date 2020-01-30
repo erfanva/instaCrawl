@@ -3,7 +3,7 @@
     "productName": "Instagram Crawler",
     "main": "src/main",
     "private": true,
-    "version": "0.2.15",
+    "version": "0.8.10",
     "description": "Instagram Crawl Desktop App",
     "license": "MIT",
     "author": "Erfan Vahabi <erfanv1@gmail.com> ",
@@ -15,6 +15,7 @@
     ],
     "dependencies": {
         "electron-config": "^1.0.0",
+        "electron-dl": "^3.0.0",
         "electron-is-dev": "^0.3.0",
         "element-ready": "^3.0.0",
         "first-run": "^1.2.0",
