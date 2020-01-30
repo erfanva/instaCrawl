@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     show_date_range()
   }
   $('#download').onclick = e => {
-    if($('#dl_count').validity.valid) {
+    if(!$('#dl_count').validity.valid) {
       alert("Downloads count is incorrect!")
       return false
     }
