@@ -5,13 +5,25 @@
 </head>
 
 <body>
+    <style>
+        .sub {
+            flex: auto;
+            text-align: center;
+        }
+    </style>
     <div style="display: flex;">
-        From: <span style="flex: auto;" id="date_from"></span> To: <span style="flex: auto;" id="date_to"></span>
+        From: <span class="sub" id="date_from"></span> To: <span class="sub" id="date_to"></span>
     </div>
     <div style="display: flex;">
-        <button style="flex: auto;" id="like_sort">Sort by likes</button>
-        <button style="flex: auto;" id="comment_sort">Sort by comments</button>
-        <button style="flex: auto;" id="chnage_date">Change Date format</button>
+        <button class="sub" id="like_sort">Sort by likes</button>
+        <button class="sub" id="comment_sort">Sort by comments</button>
+        <button class="sub" id="chnage_date">Change Date format</button>
+    </div>
+    <div style="display: flex;">
+        Download:
+        <input type="number" min="1" step="1" value="1" class="sub"id="dl_count" />
+        <div class="sub"> of <span id="tot_count"></span> post(s) </div>
+        <button class="sub" id="download">Start</button>
     </div>
     <div id="result"></div>
     <script>

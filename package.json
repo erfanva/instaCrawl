@@ -50,6 +50,7 @@
         ]
     },
     "dependencies": {
+        "electron-dl": "^3.0.0",
         "opencollective": "^1.0.3"
     },
     "collective": {

@@ -3,6 +3,7 @@ const fs = require('fs')
 const { app, Menu, shell, ipcMain, session, net } = require('electron')
 const tray = require('./tray')
 const appMenu = require('./menus')
+const { download } = require('electron-dl');
 
 // const updater = require('./updater')
 // const analytics = require('./analytics')
@@ -59,10 +60,10 @@ window.register('main', getWinConfig(BASE_URL))
 
 window.register('settings',
   getWinConfig(path.join('file://', correctPath('../renderer/html/settings.html')), true,
-  {
-    width: 460,
-    height: 480,
-  })
+    {
+      width: 460,
+      height: 480,
+    })
 )
 
 window.register('show_crawled',
@@ -74,7 +75,7 @@ window.register('show_crawled',
 app.on('ready', () => {
   // // Open Settings
   // let settingsWindow = window.open('settings')
-  
+
   // Open main window
   let mainWindow = window.open('main')
 
@@ -105,7 +106,6 @@ app.on('window-all-closed', function () {
  */
 ipcMain.on('set_date_range', (e, arg) => {
   let page = e.sender
-  console.log(arg)
   date_range = arg
   window.get("main").webContents.send('set_date_range_main', date_range)
   // const postsInRange = ifunc.selectPostsWithDate(posts, date_range)
@@ -116,7 +116,7 @@ ipcMain.on('set_date_range', (e, arg) => {
 ipcMain.on('end_crawl', (e, arg) => {
   let page = e.sender
   posts = arg
-  if(posts.length > 0) {
+  if (posts.length > 0) {
     window.open("show_crawled").removeMenu()
   }
 })
@@ -131,7 +131,55 @@ ipcMain.on('get_date_range', (e, arg) => {
 ipcMain.on('console_log', (e, ...arg) => {
   console.log(...arg)
 })
+ipcMain.on("download-files", async (event, arg) => {
+  // const { files, count, lsort, csort } = arg
+  const files = arg
 
+  const dlLocation = path.join(app.getPath("downloads"), "Instagram");
+  const pageTitle = window.get('main').getTitle()
+  const ses = session.fromPartition('persist:my-session-name')
+
+  let postIndex = 0
+  for (const file of files) {
+    await ifunc.getPagePosts(file.url, ses).then(async file_urls => {
+      const pagePercent = postIndex / files.length
+      postIndex++
+      console.log(">", postIndex)
+      let index = 0
+      for (const url of file_urls) {
+        const format = url.split("?")[0].split(".").slice(-1)[0];
+        const postPercent = index / file_urls.length
+        index++
+        const filename = postIndex + (file_urls.length > 1 && `(${index})`) + `.${format}`
+        await download(window.get('main'), url, {
+          saveAs: false,
+          filename: filename,
+          directory: path.join(dlLocation, file.owner),
+          onStarted: () => {
+            console.log(file_urls.length, index)
+          },
+          onProgress: progress => {
+            let percent = pagePercent
+            percent += postPercent / file_urls.length
+            percent += progress.percent / files.length / file_urls.length
+            percent = Math.round(percent * 100)
+            console.log(percent + "%")
+
+            if (window.get('show_crawled')) {
+              event.sender.send("download-progress", { percent, file });
+            }
+
+            window.get('main').setTitle(pageTitle + " - Downloading: " + percent + "%")
+            if (percent == 100) {
+              window.get('main').setTitle(pageTitle)
+            }
+          }
+        })
+      }
+      // })
+    })
+  }
+});
 /**
  * setupWindowEvents
  */
