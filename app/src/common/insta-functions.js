@@ -1,4 +1,5 @@
 
+const { session, net } = require('electron')
 const BASE_URL = 'https://www.instagram.com/'
 
 function cleanPostsdata(posts) {
@@ -37,13 +38,12 @@ function cleanPostsdata(posts) {
     });
     return data
   }
-  
-  function getPage(url) {
-    const ses = session.fromPartition('persist:my-session-name')
+
+  function getPage(url, session) {
     const request = net.request({
       method: 'GET',
       url: url,
-      session: ses
+      session: session
     })
     return new Promise(function (resolve, reject) {
       request.on('response', (response) => {
@@ -85,10 +85,17 @@ function cleanPostsdata(posts) {
     return (data.length > 0 && data) || [display_url]
   }
 
+  function getPagePosts(url, session) {
+    return getPage(url, session).then( pageText => {
+      return parsePostPage(pageText)
+    })
+  }
+
   module.exports = {
     BASE_URL: BASE_URL,
     cleanPostsdata: cleanPostsdata,
     selectPostsWithDate: selectPostsWithDate,
     getPage: getPage,
-    parsePostPage: parsePostPage
+    parsePostPage: parsePostPage,
+    getPagePosts: getPagePosts
   }
